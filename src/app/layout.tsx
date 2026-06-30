@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "প্রিয়জন কাউন্টডাউন",
+  title: "প্রিয়জন ",
   description: "Multi-Person Birthday Countdown Platform",
   icons: {
     icon: "/Priyojon.png",

@@ -144,16 +144,6 @@ export function AdminLoginForm({ defaultUsername, devHint }: Props) {
             </button>
           )}
         </form>
-
-        {devHint && (
-          <p className="text-center text-xs text-zinc-400 mt-4 leading-relaxed">
-            লোকাল ডেভ: ইউজারনেম{" "}
-            <span className="font-mono text-zinc-500">{devHint.username}</span>
-            {" · "}
-            পাসওয়ার্ড{" "}
-            <span className="font-mono text-zinc-500">{devHint.password}</span>
-          </p>
-        )}
       </div>
     </div>
   );
