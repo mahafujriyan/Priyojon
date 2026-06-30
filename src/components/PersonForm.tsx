@@ -14,6 +14,7 @@ import {
   type AdminThemeOption,
 } from "@/components/AdminThemeSelect";
 import { AdminPublicImagePicker } from "@/components/AdminPublicImagePicker";
+import { slugifyName } from "@/lib/slug";
 
 type PersonFormData = {
   name: string;
@@ -392,20 +393,26 @@ export function PersonForm({ initial, mode }: Props) {
         <p className="text-xs text-zinc-400 mt-1">
           লিংক + কোড একসাথে পাঠাও — একবার খুললে আর কোড লাগবে না
         </p>
-        {form.accessCode && initial?.accessPath && (
+        {form.name.trim() && mode === "create" && (
+          <p className="text-xs text-zinc-600 mt-2 break-all font-mono bg-zinc-50 rounded-lg p-2 border border-zinc-200">
+            লিংক হবে: /c/{slugifyName(form.name)}-
+            <span className="text-rose-500">র্যান্ডম১০</span>
+            {form.accessCode.trim()
+              ? `/${encodeURIComponent(form.accessCode.trim())}`
+              : "/[গোপন-কোড]"}
+          </p>
+        )}
+        {mode === "edit" && initial?.accessPath && (
           <p className="text-xs text-rose-600 mt-2 break-all font-mono bg-rose-50 rounded-lg p-2">
-            ব্যক্তিগত লিংক: /c/{initial.accessPath}/
-            {encodeURIComponent(form.accessCode.trim())}
+            ব্যক্তিগত লিংক: /c/{initial.accessPath}
+            {form.accessCode.trim()
+              ? `/${encodeURIComponent(form.accessCode.trim())}`
+              : "/[গোপন-কোড]"}
           </p>
         )}
         {form.accessCode && mode === "create" && (
           <p className="text-xs text-zinc-500 mt-2">
-            সেভ করার পর পূর্ণ লিংক দেখানো হবে — কোড লিংকের শেষে যুক্ত হবে
-          </p>
-        )}
-        {mode === "edit" && initial?.accessPath && !form.accessCode && (
-          <p className="text-xs text-zinc-400 mt-2 break-all">
-            বর্তমান লিংক: /c/{initial.accessPath}/[গোপন-কোড]
+            সেভ করলে নাম + র্যান্ডম কোড দিয়ে পূর্ণ লিংক তৈরি হবে
           </p>
         )}
       </div>

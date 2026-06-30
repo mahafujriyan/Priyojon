@@ -2,18 +2,32 @@ import { customAlphabet } from "nanoid";
 
 const tokenAlphabet = customAlphabet(
   "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
-  8,
+  10,
 );
 
 export function slugifyName(name: string): string {
-  return name
-    .trim()
+  const trimmed = name.trim();
+  if (!trimmed) return "person";
+
+  const latin = trimmed
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 32);
+
+  if (latin) return latin;
+
+  const bengali = trimmed
     .toLowerCase()
     .replace(/[^\w\s\u0980-\u09FF-]/g, "")
     .replace(/[\s_]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
-    .slice(0, 48) || "person";
+    .slice(0, 32);
+
+  return bengali || "person";
 }
 
 export function generateAccessToken(): string {
