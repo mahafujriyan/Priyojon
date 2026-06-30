@@ -18,12 +18,21 @@ function sameCalendarDay(a: Date, b: Date): boolean {
 }
 
 function calendarDayInYear(date: Date, year: number): Date {
-  return new Date(year, date.getMonth(), date.getDate(), 0, 0, 0, 0);
+  return new Date(
+    year,
+    date.getMonth(),
+    date.getDate(),
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds(),
+    0,
+  );
 }
 
 export function getEffectiveTargetDate(
   targetDate: Date,
   isRecurringYearly: boolean,
+  useExactTime: boolean,
   now: Date = new Date(),
 ): Date {
   if (!isRecurringYearly) {
@@ -31,36 +40,107 @@ export function getEffectiveTargetDate(
   }
 
   const thisYear = calendarDayInYear(targetDate, now.getFullYear());
-  if (now.getTime() < thisYear.getTime()) {
-    return thisYear;
+  if (useExactTime) {
+    if (now.getTime() < thisYear.getTime()) return thisYear;
+    if (now.getTime() >= thisYear.getTime()) {
+      const endOfDay = new Date(
+        now.getFullYear(),
+        targetDate.getMonth(),
+        targetDate.getDate(),
+        23,
+        59,
+        59,
+        999,
+      );
+      if (now.getTime() <= endOfDay.getTime()) return thisYear;
+    }
+    return calendarDayInYear(targetDate, now.getFullYear() + 1);
+  }
+
+  const dayStart = new Date(
+    now.getFullYear(),
+    targetDate.getMonth(),
+    targetDate.getDate(),
+    0,
+    0,
+    0,
+    0,
+  );
+
+  if (now.getTime() < dayStart.getTime()) {
+    return dayStart;
   }
   if (sameCalendarDay(now, targetDate)) {
-    return thisYear;
+    return dayStart;
   }
-  return calendarDayInYear(targetDate, now.getFullYear() + 1);
+  return new Date(
+    now.getFullYear() + 1,
+    targetDate.getMonth(),
+    targetDate.getDate(),
+    0,
+    0,
+    0,
+    0,
+  );
 }
 
+export function isEventMoment(
+  targetDate: Date,
+  isRecurringYearly: boolean,
+  useExactTime: boolean,
+  now: Date = new Date(),
+): boolean {
+  if (!isRecurringYearly) {
+    return now.getTime() >= targetDate.getTime();
+  }
+
+  if (!sameCalendarDay(now, targetDate)) {
+    return false;
+  }
+
+  if (useExactTime) {
+    const moment = calendarDayInYear(targetDate, now.getFullYear());
+    return now.getTime() >= moment.getTime();
+  }
+
+  return true;
+}
+
+/** @deprecated use isEventMoment */
 export function isBirthdayToday(
   targetDate: Date,
   isRecurringYearly: boolean,
   now: Date = new Date(),
 ): boolean {
-  if (isRecurringYearly) {
-    return sameCalendarDay(now, targetDate);
-  }
-  return sameCalendarDay(now, targetDate) && now >= targetDate;
+  return isEventMoment(targetDate, isRecurringYearly, false, now);
 }
 
 export function getCountdownParts(
   targetDate: Date,
   isRecurringYearly: boolean,
+  useExactTime: boolean,
   now: Date = new Date(),
 ): CountdownParts {
-  const isCelebration = isBirthdayToday(targetDate, isRecurringYearly, now);
+  const isCelebration = isEventMoment(
+    targetDate,
+    isRecurringYearly,
+    useExactTime,
+    now,
+  );
 
   if (isCelebration) {
     const nextTarget = isRecurringYearly
-      ? calendarDayInYear(targetDate, now.getFullYear() + 1)
+      ? useExactTime
+        ? calendarDayInYear(targetDate, now.getFullYear() + 1)
+        : new Date(
+            now.getFullYear() + 1,
+            targetDate.getMonth(),
+            targetDate.getDate(),
+            0,
+            0,
+            0,
+            0,
+          )
       : new Date(targetDate);
     return {
       days: 0,
@@ -77,6 +157,7 @@ export function getCountdownParts(
   const effectiveTarget = getEffectiveTargetDate(
     targetDate,
     isRecurringYearly,
+    useExactTime,
     now,
   );
   const totalMs = Math.max(0, effectiveTarget.getTime() - now.getTime());

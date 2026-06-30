@@ -1,9 +1,10 @@
-import type { RelationType } from "@/generated/prisma/client";
+import type { EventType, RelationType } from "@/generated/prisma/client";
 import { prisma } from "./prisma";
 
 export async function resolvePreferredThemeId(
   themeId: string | null,
   relationType: RelationType,
+  eventType: EventType,
 ): Promise<string | null> {
   if (!themeId) return null;
 
@@ -11,6 +12,7 @@ export async function resolvePreferredThemeId(
     where: {
       id: themeId,
       relationType,
+      eventType,
       kind: "DAILY",
     },
   });

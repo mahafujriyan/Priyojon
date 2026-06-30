@@ -1,6 +1,6 @@
 import { Prisma } from "@/generated/prisma/client";
 import { buildAccessPath } from "./slug";
-import { formatDateForInput } from "./date";
+import { formatDateForInput, formatDateTimeForInput } from "./date";
 import type { Person } from "@/generated/prisma/client";
 
 export function serializePerson(person: Person) {
@@ -9,15 +9,18 @@ export function serializePerson(person: Person) {
     name: person.name,
     slug: person.slug,
     relationType: person.relationType,
+    eventType: person.eventType,
     targetDate: formatDateForInput(person.targetDate),
+    targetDateTime: formatDateTimeForInput(person.targetDate),
+    useExactTime: person.useExactTime,
     isRecurringYearly: person.isRecurringYearly,
     accessToken: person.accessToken,
     coverImageUrl: person.coverImageUrl ?? "",
+    customBgImageUrl: person.customBgImageUrl ?? "",
     customQuote: person.customQuote ?? "",
     celebrationPopupMessage: person.celebrationPopupMessage ?? "",
     preferredThemeId: person.preferredThemeId ?? "",
-    createdAt: person.createdAt.toISOString(),
-    updatedAt: person.updatedAt.toISOString(),
+    hasAccessCode: Boolean(person.accessCodeHash),
     accessPath: buildAccessPath(person.slug, person.accessToken),
   };
 }
@@ -61,6 +64,7 @@ export function getApiErrorResponse(err: unknown): {
       "সম্পর্কের ধরন",
       "অবৈধ ডেটা",
       "থিম",
+      "গোপন কোড",
     ];
     if (validationHints.some((hint) => msg.includes(hint))) {
       return { status: 400, message: msg };

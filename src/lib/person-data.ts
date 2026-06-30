@@ -3,10 +3,14 @@ import { getCountdownParts } from "./countdown";
 import { parseThemeColors, selectTheme } from "./theme";
 import { selectQuote, resolveQuoteText } from "./quotes";
 import type { CountdownPageData } from "@/components/CountdownDisplay";
-import type { ThemeSet } from "@/generated/prisma/client";
+import type { EventType, ThemeSet } from "@/generated/prisma/client";
+import { EVENT_OVERLAY_EMOJIS } from "./events";
 
 function serializeTheme(theme: ThemeSet) {
   const colors = parseThemeColors(theme.colors);
+  const emojis = theme.overlayEmoji
+    ? theme.overlayEmoji.split(/\s+/).filter(Boolean)
+    : EVENT_OVERLAY_EMOJIS[theme.eventType];
   return {
     id: theme.id,
     colors: theme.colors,
@@ -15,11 +19,18 @@ function serializeTheme(theme: ThemeSet) {
     kind: theme.kind,
     milestoneDays: theme.milestoneDays,
     gradient: colors.gradient,
+    overlayEmojis: emojis,
   };
 }
 
+export type BuildCountdownOptions = {
+  logView?: boolean;
+  visitorKey?: string | null;
+};
+
 export async function buildCountdownPageData(
   personId: string,
+  options?: BuildCountdownOptions,
 ): Promise<CountdownPageData | null> {
   const person = await prisma.person.findUnique({ where: { id: personId } });
   if (!person) return null;
@@ -28,6 +39,7 @@ export async function buildCountdownPageData(
   const parts = getCountdownParts(
     person.targetDate,
     person.isRecurringYearly,
+    person.useExactTime,
     now,
   );
 
@@ -39,6 +51,7 @@ export async function buildCountdownPageData(
   let theme = selectTheme(
     themes,
     person.relationType,
+    person.eventType,
     parts.daysRemaining,
     parts.isCelebration,
     now,
@@ -53,6 +66,7 @@ export async function buildCountdownPageData(
       (t) =>
         t.id === person.preferredThemeId &&
         t.relationType === person.relationType &&
+        t.eventType === person.eventType &&
         t.kind === "DAILY",
     );
     if (preferred) theme = preferred;
@@ -84,16 +98,29 @@ export async function buildCountdownPageData(
 
   if (!theme) return null;
 
+  if (options?.logView) {
+    await prisma.accessLog.create({
+      data: {
+        personId: person.id,
+        visitorKey: options.visitorKey ?? null,
+      },
+    });
+  }
+
+  const bgImageUrl = person.customBgImageUrl || theme.bgImageUrl;
+
   return {
     personId: person.id,
     person: {
       name: person.name,
       relationType: person.relationType,
+      eventType: person.eventType,
       targetDateIso: person.targetDate.toISOString(),
       isRecurringYearly: person.isRecurringYearly,
+      useExactTime: person.useExactTime,
       coverImageUrl: person.coverImageUrl,
     },
-    theme: serializeTheme(theme),
+    theme: { ...serializeTheme(theme), bgImageUrl },
     quote: quoteText ? { text: quoteText } : null,
     popupMessage,
     showPopup: Boolean(popupMessage),
@@ -120,14 +147,25 @@ export async function findPersonByAccess(slug: string, token: string) {
 export async function buildCountdownPageDataByAccess(
   slug: string,
   token: string,
-  options?: { logView?: boolean },
+  options?: BuildCountdownOptions,
 ): Promise<CountdownPageData | null> {
   const person = await findPersonByAccess(slug, token);
   if (!person) return null;
 
-  if (options?.logView) {
-    await prisma.accessLog.create({ data: { personId: person.id } });
-  }
+  return buildCountdownPageData(person.id, {
+    logView: options?.logView,
+    visitorKey: options?.visitorKey ?? person.id,
+  });
+}
 
-  return buildCountdownPageData(person.id);
+export async function getPersonVisitStats(personId: string) {
+  const logs = await prisma.accessLog.findMany({
+    where: { personId },
+    orderBy: { viewedAt: "desc" },
+    take: 50,
+  });
+  const uniqueVisitors = new Set(
+    logs.map((l) => l.visitorKey ?? l.id),
+  ).size;
+  return { totalVisits: logs.length, uniqueVisitors, recent: logs };
 }

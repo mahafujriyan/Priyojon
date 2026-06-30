@@ -1,4 +1,4 @@
-import type { RelationType, ThemeSet } from "@/generated/prisma/client";
+import type { EventType, RelationType, ThemeSet } from "@/generated/prisma/client";
 import { getMilestoneThreshold } from "./countdown";
 
 export type ThemeColors = {
@@ -25,12 +25,28 @@ export function parseThemeColors(colors: unknown): ThemeColors {
 export function selectTheme(
   themes: ThemeSet[],
   relationType: RelationType,
+  eventType: EventType,
   daysRemaining: number,
   isCelebration: boolean,
   now: Date = new Date(),
 ): ThemeSet | null {
-  const filtered = themes.filter((t) => t.relationType === relationType);
-  if (filtered.length === 0) return null;
+  const filtered = themes.filter(
+    (t) => t.relationType === relationType && t.eventType === eventType,
+  );
+  if (filtered.length === 0) {
+    const birthdayThemes = themes.filter(
+      (t) => t.relationType === relationType && t.eventType === "BIRTHDAY",
+    );
+    if (birthdayThemes.length === 0) return null;
+    return selectTheme(
+      birthdayThemes,
+      relationType,
+      "BIRTHDAY",
+      daysRemaining,
+      isCelebration,
+      now,
+    );
+  }
 
   if (isCelebration) {
     const celebration = filtered.find((t) => t.kind === "CELEBRATION");

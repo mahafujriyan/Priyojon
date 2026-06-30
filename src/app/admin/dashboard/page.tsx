@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildAccessPath } from "@/lib/slug";
-import { buildCountdownPageData } from "@/lib/person-data";
+import { buildCountdownPageData, getPersonVisitStats } from "@/lib/person-data";
 import { DashboardClient } from "@/components/DashboardClient";
 import { LogoutButton } from "@/components/LogoutButton";
 import { SiteLogo } from "@/components/SiteLogo";
@@ -22,15 +22,24 @@ export default async function AdminDashboardPage({ searchParams }: PageProps) {
     orderBy: { createdAt: "desc" },
   });
 
-  const personItems = persons.map((p) => ({
-    id: p.id,
-    name: p.name,
-    relationType: p.relationType,
-    accessPath: buildAccessPath(p.slug, p.accessToken),
-    targetDateIso: p.targetDate.toISOString(),
-    isRecurringYearly: p.isRecurringYearly,
-    coverImageUrl: p.coverImageUrl,
-  }));
+  const personItems = await Promise.all(
+    persons.map(async (p) => {
+      const stats = await getPersonVisitStats(p.id);
+      return {
+        id: p.id,
+        name: p.name,
+        relationType: p.relationType,
+        eventType: p.eventType,
+        accessPath: buildAccessPath(p.slug, p.accessToken),
+        hasAccessCode: Boolean(p.accessCodeHash),
+        visitCount: stats.totalVisits,
+        uniqueVisitors: stats.uniqueVisitors,
+        targetDateIso: p.targetDate.toISOString(),
+        isRecurringYearly: p.isRecurringYearly,
+        coverImageUrl: p.coverImageUrl,
+      };
+    }),
+  );
 
   const previewData =
     persons.length > 0

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { parseThemeColors } from "@/lib/theme";
-import type { RelationType } from "@/generated/prisma/client";
+import type { EventType, RelationType } from "@/generated/prisma/client";
 
 const RELATION_TYPES = new Set<string>([
   "GIRLFRIEND_BOYFRIEND",
@@ -10,6 +10,14 @@ const RELATION_TYPES = new Set<string>([
   "CLOSE_FRIEND",
   "FAMILY",
   "CRUSH",
+  "CUSTOM",
+]);
+
+const EVENT_TYPES = new Set<string>([
+  "BIRTHDAY",
+  "ANNIVERSARY",
+  "APOLOGY",
+  "SPECIAL",
   "CUSTOM",
 ]);
 
@@ -21,6 +29,7 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const relationType = searchParams.get("relationType");
+  const eventType = searchParams.get("eventType") ?? "BIRTHDAY";
 
   if (!relationType || !RELATION_TYPES.has(relationType)) {
     return NextResponse.json(
@@ -29,13 +38,32 @@ export async function GET(request: Request) {
     );
   }
 
-  const themes = await prisma.themeSet.findMany({
+  if (!EVENT_TYPES.has(eventType)) {
+    return NextResponse.json(
+      { error: "ইভেন্টের ধরন সঠিক নয়" },
+      { status: 400 },
+    );
+  }
+
+  let themes = await prisma.themeSet.findMany({
     where: {
       relationType: relationType as RelationType,
+      eventType: eventType as EventType,
       kind: "DAILY",
     },
     orderBy: { sortOrder: "asc" },
   });
+
+  if (themes.length === 0 && eventType !== "BIRTHDAY") {
+    themes = await prisma.themeSet.findMany({
+      where: {
+        relationType: relationType as RelationType,
+        eventType: "BIRTHDAY",
+        kind: "DAILY",
+      },
+      orderBy: { sortOrder: "asc" },
+    });
+  }
 
   return NextResponse.json(
     themes.map((theme, index) => {
@@ -46,6 +74,7 @@ export async function GET(request: Request) {
         bgImageUrl: theme.bgImageUrl,
         gradient: colors.gradient,
         animationType: theme.animationType,
+        overlayEmoji: theme.overlayEmoji,
       };
     }),
   );

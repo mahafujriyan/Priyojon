@@ -1,5 +1,14 @@
-import type { RelationType } from "../src/generated/prisma/client";
+import type { EventType, RelationType } from "../src/generated/prisma/client";
 import { resolveThemeBgUrl } from "../src/lib/theme-images";
+import { EVENT_OVERLAY_EMOJIS } from "../src/lib/events";
+
+const EVENT_TYPES: EventType[] = [
+  "BIRTHDAY",
+  "ANNIVERSARY",
+  "APOLOGY",
+  "SPECIAL",
+  "CUSTOM",
+];
 
 type QuoteSeed = {
   text: string;
@@ -240,69 +249,81 @@ const CELEBRATION_GRADIENT =
 export function buildThemeSeeds() {
   const themes: Array<{
     relationType: RelationType;
+    eventType: EventType;
     name: string;
     colors: ThemePalette;
     bgImageUrl: string;
+    overlayEmoji: string;
     kind: "DAILY" | "MILESTONE" | "CELEBRATION";
     milestoneDays?: number;
     sortOrder: number;
     animationType: string;
   }> = [];
 
-  for (const [relationType, palettes] of Object.entries(PALETTE_MAP) as [
-    RelationType,
-    ThemePalette[],
-  ][]) {
-    palettes.forEach((colors, i) => {
-      themes.push({
-        relationType,
-        name: `${relationType} Daily ${i + 1}`,
-        colors,
-        bgImageUrl: resolveThemeBgUrl(relationType, "DAILY", i),
-        kind: "DAILY",
-        sortOrder: i,
-        animationType: ["fade", "float", "pulse"][i % 3],
-      });
-    });
+  for (const eventType of EVENT_TYPES) {
+    const overlayEmoji = EVENT_OVERLAY_EMOJIS[eventType].join(" ");
 
-    for (const days of [30, 7, 3, 1] as const) {
-      const base = palettes[0];
+    for (const [relationType, palettes] of Object.entries(PALETTE_MAP) as [
+      RelationType,
+      ThemePalette[],
+    ][]) {
+      palettes.forEach((colors, i) => {
+        themes.push({
+          relationType,
+          eventType,
+          name: `${eventType} ${relationType} Daily ${i + 1}`,
+          colors,
+          bgImageUrl: resolveThemeBgUrl(relationType, "DAILY", i),
+          overlayEmoji,
+          kind: "DAILY",
+          sortOrder: i,
+          animationType: ["fade", "float", "pulse"][i % 3],
+        });
+      });
+
+      for (const days of [30, 7, 3, 1] as const) {
+        const base = palettes[0];
+        themes.push({
+          relationType,
+          eventType,
+          name: `${eventType} ${relationType} Milestone ${days}d`,
+          colors: {
+            ...base,
+            gradient: MILESTONE_GRADIENTS[days],
+            accent: "#ffffff",
+          },
+          bgImageUrl: resolveThemeBgUrl(
+            relationType,
+            "MILESTONE",
+            0,
+            days,
+          ),
+          overlayEmoji,
+          kind: "MILESTONE",
+          milestoneDays: days,
+          sortOrder: 100 + days,
+          animationType: "pulse",
+        });
+      }
+
       themes.push({
         relationType,
-        name: `${relationType} Milestone ${days}d`,
+        eventType,
+        name: `${eventType} ${relationType} Celebration`,
         colors: {
-          ...base,
-          gradient: MILESTONE_GRADIENTS[days],
+          primary: "#fbbf24",
+          secondary: "#ec4899",
           accent: "#ffffff",
+          text: "#ffffff",
+          gradient: CELEBRATION_GRADIENT,
         },
-        bgImageUrl: resolveThemeBgUrl(
-          relationType,
-          "MILESTONE",
-          0,
-          days,
-        ),
-        kind: "MILESTONE",
-        milestoneDays: days,
-        sortOrder: 100 + days,
-        animationType: "pulse",
+        bgImageUrl: resolveThemeBgUrl(relationType, "CELEBRATION"),
+        overlayEmoji,
+        kind: "CELEBRATION",
+        sortOrder: 200,
+        animationType: "confetti",
       });
     }
-
-    themes.push({
-      relationType,
-      name: `${relationType} Celebration`,
-      colors: {
-        primary: "#fbbf24",
-        secondary: "#ec4899",
-        accent: "#ffffff",
-        text: "#ffffff",
-        gradient: CELEBRATION_GRADIENT,
-      },
-      bgImageUrl: resolveThemeBgUrl(relationType, "CELEBRATION"),
-      kind: "CELEBRATION",
-      sortOrder: 200,
-      animationType: "confetti",
-    });
   }
 
   return themes;

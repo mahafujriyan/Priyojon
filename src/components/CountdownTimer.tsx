@@ -7,6 +7,8 @@ import {
   padTwo,
   type CountdownParts,
 } from "@/lib/countdown";
+import { EVENT_CELEBRATION } from "@/lib/events";
+import type { EventType } from "@/generated/prisma/client";
 
 type InitialCountdown = {
   days: number;
@@ -19,9 +21,12 @@ type InitialCountdown = {
 type Props = {
   targetDateIso: string;
   isRecurringYearly: boolean;
+  useExactTime: boolean;
+  eventType: EventType;
   serverTimeIso: string;
   initialCountdown: InitialCountdown;
   highlight?: boolean;
+  onCelebrationChange?: (active: boolean) => void;
 };
 
 function CountdownUnit({
@@ -89,9 +94,12 @@ function toParts(initial: InitialCountdown): CountdownParts {
 export function CountdownTimer({
   targetDateIso,
   isRecurringYearly,
+  useExactTime,
+  eventType,
   serverTimeIso,
   initialCountdown,
   highlight = false,
+  onCelebrationChange,
 }: Props) {
   const [parts, setParts] = useState<CountdownParts>(() =>
     toParts(initialCountdown),
@@ -106,32 +114,42 @@ export function CountdownTimer({
 
     const tick = () => {
       const now = new Date(Date.now() + serverOffset);
-      setParts(
-        getCountdownParts(
-          new Date(targetDateIso),
-          isRecurringYearly,
-          now,
-        ),
+      const next = getCountdownParts(
+        new Date(targetDateIso),
+        isRecurringYearly,
+        useExactTime,
+        now,
       );
+      setParts(next);
+      onCelebrationChange?.(next.isCelebration);
     };
 
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [targetDateIso, isRecurringYearly, serverTimeIso]);
+  }, [
+    targetDateIso,
+    isRecurringYearly,
+    useExactTime,
+    serverTimeIso,
+    onCelebrationChange,
+  ]);
+
+  const celebration = EVENT_CELEBRATION[eventType];
 
   if (parts.isCelebration) {
     return (
       <motion.div
-        initial={false}
+        initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 200, damping: 18 }}
         className="text-center"
       >
         <p className="text-3xl sm:text-5xl md:text-6xl font-bold">
-          🎂 শুভ জন্মদিন! 🎉
+          {celebration.title}
         </p>
         <p className="mt-4 text-lg sm:text-xl opacity-90">
-          আজ তোমার বিশেষ দিন
+          {celebration.subtitle}
         </p>
       </motion.div>
     );

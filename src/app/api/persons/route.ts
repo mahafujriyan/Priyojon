@@ -9,6 +9,7 @@ import {
   serializePerson,
 } from "@/lib/person-api";
 import { resolvePreferredThemeId } from "@/lib/theme-selection";
+import { personDataFromInput } from "@/lib/person-mutate";
 
 export async function GET() {
   const session = await getSession();
@@ -36,20 +37,20 @@ export async function POST(request: Request) {
     const preferredThemeId = await resolvePreferredThemeId(
       input.preferredThemeId,
       input.relationType,
+      input.eventType,
+    );
+    const accessCodeHash = await resolveAccessCodeHash(
+      input.accessCode,
+      null,
+      true,
     );
 
     const person = await prisma.person.create({
       data: {
-        name: input.name,
-        slug: input.slug,
-        relationType: input.relationType,
-        targetDate: input.targetDate,
-        isRecurringYearly: input.isRecurringYearly,
+        ...personDataFromInput(input),
         accessToken,
-        coverImageUrl: input.coverImageUrl,
-        customQuote: input.customQuote,
-        celebrationPopupMessage: input.celebrationPopupMessage,
         preferredThemeId,
+        accessCodeHash,
       },
     });
 

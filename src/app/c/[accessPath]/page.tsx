@@ -5,7 +5,9 @@ import {
   buildCountdownPageDataByAccess,
   findPersonByAccess,
 } from "@/lib/person-data";
-import { CountdownDisplay } from "@/components/CountdownDisplay";
+import { hasPersonUnlock } from "@/lib/person-access";
+import { CountdownPortal } from "@/components/CountdownPortal";
+import { AccessCodeNotSet } from "@/components/AccessCodeNotSet";
 
 type PageProps = { params: Promise<{ accessPath: string }> };
 
@@ -30,13 +32,29 @@ export default async function CountdownPage({ params }: PageProps) {
 
   if (!parsed) notFound();
 
-  const data = await buildCountdownPageDataByAccess(
-    parsed.slug,
-    parsed.token,
-    { logView: true },
+  const person = await findPersonByAccess(parsed.slug, parsed.token);
+  if (!person) notFound();
+
+  if (!person.accessCodeHash) {
+    return <AccessCodeNotSet personName={person.name} />;
+  }
+
+  const unlocked = await hasPersonUnlock(person.id);
+
+  const data = unlocked
+    ? await buildCountdownPageDataByAccess(parsed.slug, parsed.token, {
+        logView: true,
+        visitorKey: person.id,
+      })
+    : null;
+
+  return (
+    <CountdownPortal
+      accessPath={accessPath}
+      personName={person.name}
+      eventType={person.eventType}
+      unlocked={unlocked}
+      data={data}
+    />
   );
-
-  if (!data) notFound();
-
-  return <CountdownDisplay data={data} />;
 }

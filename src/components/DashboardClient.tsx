@@ -4,13 +4,18 @@ import { useState } from "react";
 import Link from "next/link";
 import { CountdownDisplay, type CountdownPageData } from "./CountdownDisplay";
 import { RELATION_LABELS } from "@/lib/theme";
-import type { RelationType } from "@/generated/prisma/client";
+import { EVENT_LABELS } from "@/lib/events";
+import type { EventType, RelationType } from "@/generated/prisma/client";
 
 type PersonItem = {
   id: string;
   name: string;
   relationType: RelationType;
+  eventType: EventType;
   accessPath: string;
+  hasAccessCode: boolean;
+  visitCount: number;
+  uniqueVisitors: number;
   targetDateIso: string;
   isRecurringYearly: boolean;
   coverImageUrl: string | null;
@@ -83,7 +88,13 @@ export function DashboardClient({ persons, previewData }: Props) {
                     <div>
                       <p className="font-medium text-zinc-900">{person.name}</p>
                       <p className="text-sm text-zinc-500">
+                        {EVENT_LABELS[person.eventType]} ·{" "}
                         {RELATION_LABELS[person.relationType]}
+                      </p>
+                      <p className="text-xs text-zinc-400 mt-1">
+                        ভিজিট: {person.visitCount} ({person.uniqueVisitors}{" "}
+                        ইউনিক)
+                        {!person.hasAccessCode && " · কোড সেট করুন"}
                       </p>
                     </div>
                     <div className="flex gap-2 shrink-0">

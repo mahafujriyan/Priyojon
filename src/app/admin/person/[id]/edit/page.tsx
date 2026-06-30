@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PersonForm } from "@/components/PersonForm";
-import { formatDateForInput } from "@/lib/date";
+import { formatDateTimeForInput } from "@/lib/date";
+import { buildAccessPath } from "@/lib/slug";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -41,12 +42,16 @@ export default async function EditPersonPage({ params }: PageProps) {
             id: person.id,
             name: person.name,
             relationType: person.relationType,
-            targetDate: formatDateForInput(person.targetDate),
+            eventType: person.eventType,
+            targetDate: formatDateTimeForInput(person.targetDate),
+            useExactTime: person.useExactTime,
             isRecurringYearly: person.isRecurringYearly,
             coverImageUrl: person.coverImageUrl ?? "",
+            customBgImageUrl: person.customBgImageUrl ?? "",
             customQuote: person.customQuote ?? "",
             celebrationPopupMessage: person.celebrationPopupMessage ?? "",
             preferredThemeId: person.preferredThemeId ?? "",
+            accessPath: buildAccessPath(person.slug, person.accessToken),
           }}
         />
       </main>

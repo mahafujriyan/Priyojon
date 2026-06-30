@@ -7,6 +7,7 @@ import {
   readJsonBody,
   serializePerson,
 } from "@/lib/person-api";
+import { personDataFromInput, resolveAccessCodeHash } from "@/lib/person-mutate";
 import { resolvePreferredThemeId } from "@/lib/theme-selection";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -50,20 +51,21 @@ export async function PUT(request: Request, context: RouteContext) {
     const preferredThemeId = await resolvePreferredThemeId(
       input.preferredThemeId,
       input.relationType,
+      input.eventType,
+    );
+    const accessCodeHash = await resolveAccessCodeHash(
+      input.accessCode,
+      existing.accessCodeHash,
+      false,
     );
 
     const person = await prisma.person.update({
       where: { id },
       data: {
-        name: input.name,
+        ...personDataFromInput(input),
         slug,
-        relationType: input.relationType,
-        targetDate: input.targetDate,
-        isRecurringYearly: input.isRecurringYearly,
-        coverImageUrl: input.coverImageUrl,
-        customQuote: input.customQuote,
-        celebrationPopupMessage: input.celebrationPopupMessage,
         preferredThemeId,
+        accessCodeHash,
       },
     });
 

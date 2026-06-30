@@ -1,5 +1,9 @@
-import type { RelationType } from "@/generated/prisma/client";
+import type { EventType, RelationType } from "@/generated/prisma/client";
 import { slugifyName } from "./slug";
+import {
+  defaultExactTimeForEvent,
+  defaultRecurringForEvent,
+} from "./events";
 
 const RELATION_TYPES = new Set<string>([
   "GIRLFRIEND_BOYFRIEND",
@@ -10,15 +14,27 @@ const RELATION_TYPES = new Set<string>([
   "CUSTOM",
 ]);
 
+const EVENT_TYPES = new Set<string>([
+  "BIRTHDAY",
+  "ANNIVERSARY",
+  "APOLOGY",
+  "SPECIAL",
+  "CUSTOM",
+]);
+
 export type PersonInput = {
   name: string;
   relationType: RelationType;
+  eventType: EventType;
   targetDate: Date;
+  useExactTime: boolean;
   isRecurringYearly: boolean;
   coverImageUrl: string | null;
+  customBgImageUrl: string | null;
   customQuote: string | null;
   celebrationPopupMessage: string | null;
   preferredThemeId: string | null;
+  accessCode: string | null;
   slug: string;
 };
 
@@ -31,12 +47,33 @@ function optText(value: unknown): string | null {
 
 export function parseTargetDate(value: unknown): Date {
   if (typeof value !== "string" || !value.trim()) {
-    throw new Error("জন্মতারিখ প্রয়োজন");
+    throw new Error("তারিখ ও সময় প্রয়োজন");
   }
 
-  const match = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const raw = value.trim();
+  const datetime = raw.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/,
+  );
+  if (datetime) {
+    const year = Number(datetime[1]);
+    const month = Number(datetime[2]);
+    const day = Number(datetime[3]);
+    const hour = Number(datetime[4]);
+    const minute = Number(datetime[5]);
+    const date = new Date(year, month - 1, day, hour, minute, 0, 0);
+    if (
+      date.getFullYear() !== year ||
+      date.getMonth() !== month - 1 ||
+      date.getDate() !== day
+    ) {
+      throw new Error("তারিখ ও সময় সঠিক নয়");
+    }
+    return date;
+  }
+
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!match) {
-    throw new Error("জন্মতারিখ সঠিক নয়");
+    throw new Error("তারিখ ও সময় সঠিক নয়");
   }
 
   const year = Number(match[1]);
@@ -49,7 +86,7 @@ export function parseTargetDate(value: unknown): Date {
     date.getMonth() !== month - 1 ||
     date.getDate() !== day
   ) {
-    throw new Error("জন্মতারিখ সঠিক নয়");
+    throw new Error("তারিখ ও সময় সঠিক নয়");
   }
 
   return date;
@@ -72,15 +109,35 @@ export function parsePersonBody(body: unknown): PersonInput {
     throw new Error("সম্পর্কের ধরন সঠিক নয়");
   }
 
+  const eventTypeRaw = data.eventType ?? "BIRTHDAY";
+  if (typeof eventTypeRaw !== "string" || !EVENT_TYPES.has(eventTypeRaw)) {
+    throw new Error("ইভেন্টের ধরন সঠিক নয়");
+  }
+  const eventType = eventTypeRaw as EventType;
+
+  const useExactTime =
+    typeof data.useExactTime === "boolean"
+      ? data.useExactTime
+      : defaultExactTimeForEvent(eventType);
+
+  const isRecurringYearly =
+    typeof data.isRecurringYearly === "boolean"
+      ? data.isRecurringYearly
+      : defaultRecurringForEvent(eventType);
+
   return {
     name,
     relationType: relationType as RelationType,
+    eventType,
     targetDate: parseTargetDate(data.targetDate),
-    isRecurringYearly: data.isRecurringYearly !== false,
+    useExactTime,
+    isRecurringYearly,
     coverImageUrl: optText(data.coverImageUrl),
+    customBgImageUrl: optText(data.customBgImageUrl),
     customQuote: optText(data.customQuote),
     celebrationPopupMessage: optText(data.celebrationPopupMessage),
     preferredThemeId: optText(data.preferredThemeId),
+    accessCode: optText(data.accessCode),
     slug: slugifyName(name),
   };
 }
