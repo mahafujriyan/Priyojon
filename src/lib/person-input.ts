@@ -23,8 +23,8 @@ export type PersonInput = {
 
 function optText(value: unknown): string | null {
   if (value == null) return null;
-  if (typeof value !== "string") return null;
-  const trimmed = value.trim();
+  const text = typeof value === "string" ? value : String(value);
+  const trimmed = text.trim();
   return trimmed || null;
 }
 

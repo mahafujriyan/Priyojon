@@ -45,7 +45,14 @@ export async function buildCountdownPageData(
     parts.isCelebration,
   );
 
-  const dateKey = now.toISOString().slice(0, 10);
+  const popupMessage = parts.isCelebration
+    ? person.celebrationPopupMessage?.trim() ||
+      quote?.text ||
+      quoteText ||
+      null
+    : null;
+
+  const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
   if (!theme) return null;
 
@@ -66,8 +73,8 @@ export async function buildCountdownPageData(
       milestoneDays: theme.milestoneDays,
     },
     quote: quoteText ? { text: quoteText } : null,
-    popupMessage: quoteText,
-    showPopup: Boolean(quoteText),
+    popupMessage,
+    showPopup: Boolean(popupMessage),
     dateKey,
     serverTimeIso: now.toISOString(),
     isCelebration: parts.isCelebration,

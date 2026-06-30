@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 type Props = {
@@ -11,6 +11,10 @@ type Props = {
   dateKey: string;
 };
 
+function storageKey(personId: string, dateKey: string) {
+  return `priyojon-popup-${personId}-${dateKey}`;
+}
+
 export function FloatingMessagePopup({
   personName,
   message,
@@ -20,20 +24,20 @@ export function FloatingMessagePopup({
 }: Props) {
   const [visible, setVisible] = useState(false);
 
-  useEffect(() => {
-    const storageKey = `priyojon-popup-${personId}-${dateKey}`;
-    const seen = sessionStorage.getItem(storageKey);
-    if (!seen) {
-      const timer = setTimeout(() => setVisible(true), 800);
-      return () => clearTimeout(timer);
-    }
+  useLayoutEffect(() => {
+    const key = storageKey(personId, dateKey);
+    if (sessionStorage.getItem(key)) return;
+
+    const timer = setTimeout(() => {
+      sessionStorage.setItem(key, "1");
+      setVisible(true);
+    }, 800);
+
+    return () => clearTimeout(timer);
   }, [personId, dateKey]);
 
   function dismiss() {
-    sessionStorage.setItem(
-      `priyojon-popup-${personId}-${dateKey}`,
-      "1",
-    );
+    sessionStorage.setItem(storageKey(personId, dateKey), "1");
     setVisible(false);
   }
 
