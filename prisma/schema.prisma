@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RelationType {
+  GIRLFRIEND_BOYFRIEND
+  BEST_FRIEND
+  CLOSE_FRIEND
+  FAMILY
+  CRUSH
+  CUSTOM
+}
+
+enum ThemeKind {
+  DAILY
+  MILESTONE
+  CELEBRATION
+}
+
+enum QuoteKind {
+  DAILY
+  MILESTONE
+  CELEBRATION
+}
+
+model Person {
+  id                     String       @id @default(cuid())
+  name                   String
+  slug                   String
+  relationType           RelationType
+  targetDate             DateTime
+  isRecurringYearly      Boolean      @default(true)
+  accessToken            String       @unique
+  coverImageUrl          String?
+  customQuote            String?
+  celebrationPopupMessage String?
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+  accessLogs             AccessLog[]
+
+  @@unique([slug, accessToken])
+  @@index([slug])
+}
+
+model ThemeSet {
+  id             String       @id @default(cuid())
+  relationType   RelationType
+  name           String
+  colors         Json
+  bgImageUrl     String?
+  animationType  String       @default("fade")
+  kind           ThemeKind    @default(DAILY)
+  milestoneDays  Int?
+  sortOrder      Int          @default(0)
+}
+
+model Quote {
+  id            String       @id @default(cuid())
+  relationType  RelationType
+  text          String
+  kind          QuoteKind    @default(DAILY)
+  dayOffset     Int?
+  milestoneDays Int?
+}
+
+model AdminUser {
+  id           String @id @default(cuid())
+  email        String @unique
+  passwordHash String
+}
+
+model AccessLog {
+  id       String   @id @default(cuid())
+  personId String
+  person   Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+  viewedAt DateTime @default(now())
+
+  @@index([personId])
+}
