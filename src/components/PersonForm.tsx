@@ -25,6 +25,7 @@ type PersonFormData = {
   coverImageUrl: string;
   customBgImageUrl: string;
   customQuote: string;
+  welcomeMessage: string;
   celebrationPopupMessage: string;
   preferredThemeId: string;
   accessCode: string;
@@ -45,6 +46,7 @@ export function PersonForm({ initial, mode }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [savedPortalPath, setSavedPortalPath] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [themeOptions, setThemeOptions] = useState<AdminThemeOption[]>([]);
   const [themesLoading, setThemesLoading] = useState(false);
@@ -61,6 +63,7 @@ export function PersonForm({ initial, mode }: Props) {
     coverImageUrl: initial?.coverImageUrl ?? "",
     customBgImageUrl: initial?.customBgImageUrl ?? "",
     customQuote: initial?.customQuote ?? "",
+    welcomeMessage: initial?.welcomeMessage ?? "",
     celebrationPopupMessage: initial?.celebrationPopupMessage ?? "",
     preferredThemeId: initial?.preferredThemeId ?? "",
     accessCode: "",
@@ -161,6 +164,11 @@ export function PersonForm({ initial, mode }: Props) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Request failed");
 
+      if (data.privatePortalPath) {
+        setSavedPortalPath(data.privatePortalPath);
+        return;
+      }
+
       router.push("/admin/dashboard");
       router.refresh();
     } catch (err) {
@@ -194,6 +202,33 @@ export function PersonForm({ initial, mode }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-lg">
+      {savedPortalPath && (
+        <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4 space-y-3">
+          <p className="text-sm font-medium text-emerald-800">
+            প্রিয়জন যোগ হয়েছে! এই লিংকটি পাঠাও:
+          </p>
+          <p className="text-xs font-mono break-all text-emerald-900 bg-white rounded-lg p-3 border border-emerald-100">
+            {savedPortalPath}
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => navigator.clipboard.writeText(savedPortalPath)}
+              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700"
+            >
+              কপি করুন
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push("/admin/dashboard")}
+              className="rounded-lg border border-emerald-300 px-4 py-2 text-sm text-emerald-800 hover:bg-emerald-100"
+            >
+              ড্যাশবোর্ডে যান
+            </button>
+          </div>
+        </div>
+      )}
+
       {error && (
         <div className="rounded-lg bg-red-50 text-red-700 px-4 py-3 text-sm">
           {error}
@@ -355,11 +390,22 @@ export function PersonForm({ initial, mode }: Props) {
           className="w-full rounded-lg border border-zinc-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-400"
         />
         <p className="text-xs text-zinc-400 mt-1">
-          লিংক + এই কোড ছাড়া কেউ পোর্টাল দেখতে পারবে না
+          লিংক + কোড একসাথে পাঠাও — একবার খুললে আর কোড লাগবে না
         </p>
-        {mode === "edit" && initial?.accessPath && (
-          <p className="text-xs text-rose-600 mt-2 break-all">
-            ব্যক্তিগত লিংক: /c/{initial.accessPath}
+        {form.accessCode && initial?.accessPath && (
+          <p className="text-xs text-rose-600 mt-2 break-all font-mono bg-rose-50 rounded-lg p-2">
+            ব্যক্তিগত লিংক: /c/{initial.accessPath}/
+            {encodeURIComponent(form.accessCode.trim())}
+          </p>
+        )}
+        {form.accessCode && mode === "create" && (
+          <p className="text-xs text-zinc-500 mt-2">
+            সেভ করার পর পূর্ণ লিংক দেখানো হবে — কোড লিংকের শেষে যুক্ত হবে
+          </p>
+        )}
+        {mode === "edit" && initial?.accessPath && !form.accessCode && (
+          <p className="text-xs text-zinc-400 mt-2 break-all">
+            বর্তমান লিংক: /c/{initial.accessPath}/[গোপন-কোড]
           </p>
         )}
       </div>
@@ -381,6 +427,42 @@ export function PersonForm({ initial, mode }: Props) {
         {form.coverImageUrl && (
           <p className="text-sm text-green-600 mt-1">ছবি আপলোড হয়েছে ✓</p>
         )}
+      </div>
+
+      <div className="rounded-xl border border-rose-100 bg-rose-50/50 p-4 space-y-2">
+        <p className="text-sm font-medium text-rose-800">বার্তা সম্পর্কে জানো</p>
+        <ul className="text-xs text-rose-700/80 space-y-1.5 list-disc list-inside leading-relaxed">
+          <li>
+            <strong>স্বাগত বার্তা</strong> — কোড দিয়ে প্রথমবার ঢুকলে সুন্দর
+            অ্যানিমেশনসহ দেখাবে
+          </li>
+          <li>
+            <strong>নিজের বাণি</strong> — পেজে প্রতিদিন নিচে দেখায়
+          </li>
+          <li>
+            <strong>বিশেষ দিন পপআপ</strong> — টার্গেট তারিখে (জন্মদিন ইত্যাদি)
+            ফোনে উড়ে আসে
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-zinc-700 mb-1">
+          স্বাগত বার্তা (ঐচ্ছিক)
+        </label>
+        <textarea
+          value={form.welcomeMessage}
+          onChange={(e) =>
+            setForm({ ...form, welcomeMessage: e.target.value })
+          }
+          rows={3}
+          placeholder="খালি রাখলে অটো সুন্দর স্বাগত বার্তা তৈরি হবে..."
+          className="w-full rounded-lg border border-zinc-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none"
+        />
+        <p className="text-xs text-zinc-400 mt-1">
+          প্রথমবার পোর্টালে ঢুকলে নামসহ এই বার্তা দেখাবে — মোবাইলেও সুন্দর
+          দেখায়
+        </p>
       </div>
 
       <div>

@@ -10,8 +10,8 @@ import { AnimatedHeroName } from "./AnimatedHeroName";
 import { FloatingMessagePopup } from "./FloatingMessagePopup";
 import { ThemeEmojiOverlay } from "./ThemeEmojiOverlay";
 import { CelebrationReveal } from "./CelebrationReveal";
-import { parseThemeColors, RELATION_LABELS } from "@/lib/theme";
-import { EVENT_LABELS } from "@/lib/events";
+import { WelcomePortalOverlay } from "./WelcomePortalOverlay";
+import { parseThemeColors } from "@/lib/theme";
 import { resolveParticleVariant } from "@/lib/theme-effects";
 import type { EventType, RelationType } from "@/generated/prisma/client";
 
@@ -36,6 +36,7 @@ export type CountdownPageData = {
     overlayEmojis: string[];
   };
   quote: { text: string } | null;
+  welcomeMessage: string;
   popupMessage: string | null;
   showPopup: boolean;
   personId: string;
@@ -54,11 +55,9 @@ export type CountdownPageData = {
 
 export function CountdownDisplay({
   data,
-  showRelationLabel = true,
   showQuote = true,
 }: {
   data: CountdownPageData;
-  showRelationLabel?: boolean;
   showQuote?: boolean;
 }) {
   const colors = parseThemeColors(data.theme.colors);
@@ -137,6 +136,12 @@ export function CountdownDisplay({
       {isCelebration && <CelebrationEffect />}
       <CelebrationReveal active={isCelebration} personName={data.person.name} />
 
+      <WelcomePortalOverlay
+        personName={data.person.name}
+        message={data.welcomeMessage}
+        eventType={data.person.eventType}
+      />
+
       {data.showPopup && data.popupMessage && (
         <FloatingMessagePopup
           personName={data.person.name}
@@ -153,12 +158,6 @@ export function CountdownDisplay({
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="space-y-1 sm:space-y-2">
-          {showRelationLabel && (
-            <p className="text-xs sm:text-sm uppercase tracking-[0.25em] opacity-90 drop-shadow-md">
-              {EVENT_LABELS[data.person.eventType]} ·{" "}
-              {RELATION_LABELS[data.person.relationType]}
-            </p>
-          )}
           <AnimatedHeroName
             name={data.person.name}
             relationType={data.person.relationType}

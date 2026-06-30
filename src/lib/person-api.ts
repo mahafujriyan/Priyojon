@@ -1,9 +1,14 @@
 import { Prisma } from "@/generated/prisma/client";
-import { buildAccessPath } from "./slug";
+import { buildAccessPath, buildPrivatePortalPath } from "./slug";
 import { formatDateForInput, formatDateTimeForInput } from "./date";
 import type { Person } from "@/generated/prisma/client";
 
-export function serializePerson(person: Person) {
+export function serializePerson(
+  person: Person,
+  options?: { accessCode?: string | null },
+) {
+  const accessPath = buildAccessPath(person.slug, person.accessToken);
+  const code = options?.accessCode?.trim();
   return {
     id: person.id,
     name: person.name,
@@ -18,10 +23,14 @@ export function serializePerson(person: Person) {
     coverImageUrl: person.coverImageUrl ?? "",
     customBgImageUrl: person.customBgImageUrl ?? "",
     customQuote: person.customQuote ?? "",
+    welcomeMessage: person.welcomeMessage ?? "",
     celebrationPopupMessage: person.celebrationPopupMessage ?? "",
     preferredThemeId: person.preferredThemeId ?? "",
     hasAccessCode: Boolean(person.accessCodeHash),
-    accessPath: buildAccessPath(person.slug, person.accessToken),
+    accessPath,
+    privatePortalPath: code
+      ? buildPrivatePortalPath(person.slug, person.accessToken, code)
+      : null,
   };
 }
 

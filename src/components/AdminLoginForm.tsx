@@ -128,6 +128,12 @@ export function AdminLoginForm({ defaultUsername, devHint }: Props) {
             {loading ? "লগইন হচ্ছে..." : "লগইন করুন"}
           </button>
 
+          <p className="text-center text-xs text-zinc-400 pt-2">
+            <Link href="/admin/register" className="hover:text-rose-500">
+              মাস্টার কোড দিয়ে নতুন অ্যাডমিন তৈরি
+            </Link>
+          </p>
+
           {devHint && (
             <button
               type="button"

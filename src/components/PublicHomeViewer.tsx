@@ -72,7 +72,6 @@ export function PublicHomeViewer({ persons, initialPreview }: Props) {
         <CountdownDisplay
           key={`${preview.personId}-${preview.dateKey}`}
           data={preview}
-          showRelationLabel={false}
           showQuote={false}
         />
       ) : (

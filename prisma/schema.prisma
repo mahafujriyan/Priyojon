@@ -49,6 +49,7 @@ model Person {
   coverImageUrl           String?
   customBgImageUrl        String?
   customQuote             String?
+  welcomeMessage          String?
   celebrationPopupMessage String?
   preferredThemeId        String?
   accessCodeHash          String?

@@ -1,10 +1,12 @@
 import { prisma } from "./prisma";
+import { verifyPassword } from "./auth";
 import { getCountdownParts } from "./countdown";
 import { parseThemeColors, selectTheme } from "./theme";
 import { selectQuote, resolveQuoteText } from "./quotes";
 import type { CountdownPageData } from "@/components/CountdownDisplay";
 import type { EventType, ThemeSet } from "@/generated/prisma/client";
 import { EVENT_OVERLAY_EMOJIS } from "./events";
+import { resolveWelcomeMessage } from "./welcome";
 
 function serializeTheme(theme: ThemeSet) {
   const colors = parseThemeColors(theme.colors);
@@ -87,6 +89,8 @@ export async function buildCountdownPageData(
     parts.isCelebration,
   );
 
+  const welcomeMessage = resolveWelcomeMessage(person);
+
   const popupMessage = parts.isCelebration
     ? person.celebrationPopupMessage?.trim() ||
       quote?.text ||
@@ -122,6 +126,7 @@ export async function buildCountdownPageData(
     },
     theme: { ...serializeTheme(theme), bgImageUrl },
     quote: quoteText ? { text: quoteText } : null,
+    welcomeMessage,
     popupMessage,
     showPopup: Boolean(popupMessage),
     dateKey,
@@ -142,6 +147,26 @@ export async function findPersonByAccess(slug: string, token: string) {
   return prisma.person.findFirst({
     where: { slug, accessToken: token },
   });
+}
+
+export async function findPersonByAccessCode(code: string) {
+  const trimmed = code.trim();
+  if (!trimmed) return null;
+
+  const persons = await prisma.person.findMany({
+    where: { accessCodeHash: { not: null } },
+  });
+
+  for (const person of persons) {
+    if (
+      person.accessCodeHash &&
+      (await verifyPassword(trimmed, person.accessCodeHash))
+    ) {
+      return person;
+    }
+  }
+
+  return null;
 }
 
 export async function buildCountdownPageDataByAccess(

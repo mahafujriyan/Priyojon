@@ -9,7 +9,7 @@ import {
   serializePerson,
 } from "@/lib/person-api";
 import { resolvePreferredThemeId } from "@/lib/theme-selection";
-import { personDataFromInput } from "@/lib/person-mutate";
+import { personDataFromInput, resolveAccessCodeHash } from "@/lib/person-mutate";
 
 export async function GET() {
   const session = await getSession();
@@ -21,7 +21,7 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json(persons.map(serializePerson));
+  return NextResponse.json(persons.map((p) => serializePerson(p)));
 }
 
 export async function POST(request: Request) {
@@ -54,7 +54,9 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json(serializePerson(person));
+    return NextResponse.json(
+      serializePerson(person, { accessCode: input.accessCode }),
+    );
   } catch (err) {
     console.error("Person create error:", err);
     const { status, message } = getApiErrorResponse(err);

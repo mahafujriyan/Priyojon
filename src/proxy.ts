@@ -19,17 +19,19 @@ async function isAuthenticated(request: NextRequest): Promise<boolean> {
   }
 }
 
+const PUBLIC_ADMIN_PATHS = new Set(["/admin/login", "/admin/register"]);
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
+  if (pathname.startsWith("/admin") && !PUBLIC_ADMIN_PATHS.has(pathname)) {
     const authed = await isAuthenticated(request);
     if (!authed) {
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
   }
 
-  if (pathname === "/admin/login") {
+  if (pathname === "/admin/login" || pathname === "/admin/register") {
     const authed = await isAuthenticated(request);
     if (authed) {
       return NextResponse.redirect(new URL("/admin/dashboard", request.url));

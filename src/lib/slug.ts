@@ -24,6 +24,15 @@ export function buildAccessPath(slug: string, token: string): string {
   return `${slug}-${token}`;
 }
 
+export function buildPrivatePortalPath(
+  slug: string,
+  token: string,
+  code: string,
+): string {
+  const accessPath = buildAccessPath(slug, token);
+  return `/c/${accessPath}/${encodeURIComponent(code.trim())}`;
+}
+
 export function parseAccessPath(accessPath: string): {
   slug: string;
   token: string;

@@ -33,6 +33,7 @@ export function personDataFromInput(input: PersonInput) {
     coverImageUrl: input.coverImageUrl,
     customBgImageUrl: input.customBgImageUrl,
     customQuote: input.customQuote,
+    welcomeMessage: input.welcomeMessage,
     celebrationPopupMessage: input.celebrationPopupMessage,
   };
 }

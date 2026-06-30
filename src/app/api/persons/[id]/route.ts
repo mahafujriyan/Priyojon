@@ -69,7 +69,11 @@ export async function PUT(request: Request, context: RouteContext) {
       },
     });
 
-    return NextResponse.json(serializePerson(person));
+    return NextResponse.json(
+      serializePerson(person, {
+        accessCode: input.accessCode ?? undefined,
+      }),
+    );
   } catch (err) {
     console.error("Person update error:", err);
     const { status, message } = getApiErrorResponse(err);

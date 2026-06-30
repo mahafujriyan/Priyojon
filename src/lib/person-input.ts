@@ -32,6 +32,7 @@ export type PersonInput = {
   coverImageUrl: string | null;
   customBgImageUrl: string | null;
   customQuote: string | null;
+  welcomeMessage: string | null;
   celebrationPopupMessage: string | null;
   preferredThemeId: string | null;
   accessCode: string | null;
@@ -135,6 +136,7 @@ export function parsePersonBody(body: unknown): PersonInput {
     coverImageUrl: optText(data.coverImageUrl),
     customBgImageUrl: optText(data.customBgImageUrl),
     customQuote: optText(data.customQuote),
+    welcomeMessage: optText(data.welcomeMessage),
     celebrationPopupMessage: optText(data.celebrationPopupMessage),
     preferredThemeId: optText(data.preferredThemeId),
     accessCode: optText(data.accessCode),

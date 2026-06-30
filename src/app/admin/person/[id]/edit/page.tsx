@@ -49,6 +49,7 @@ export default async function EditPersonPage({ params }: PageProps) {
             coverImageUrl: person.coverImageUrl ?? "",
             customBgImageUrl: person.customBgImageUrl ?? "",
             customQuote: person.customQuote ?? "",
+            welcomeMessage: person.welcomeMessage ?? "",
             celebrationPopupMessage: person.celebrationPopupMessage ?? "",
             preferredThemeId: person.preferredThemeId ?? "",
             accessPath: buildAccessPath(person.slug, person.accessToken),

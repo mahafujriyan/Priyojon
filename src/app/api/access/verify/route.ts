@@ -11,11 +11,8 @@ export async function POST(request: Request) {
       typeof body.accessPath === "string" ? body.accessPath.trim() : "";
     const code = typeof body.code === "string" ? body.code.trim() : "";
 
-    if (!accessPath || !code) {
-      return NextResponse.json(
-        { error: "লিংক ও গোপন কোড দিন" },
-        { status: 400 },
-      );
+    if (!code) {
+      return NextResponse.json({ error: "গোপন কোড দিন" }, { status: 400 });
     }
 
     const parsed = parseAccessPath(accessPath);
@@ -45,7 +42,7 @@ export async function POST(request: Request) {
 
     await setPersonUnlock(person.id);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, personId: person.id });
   } catch (err) {
     console.error("Access verify error:", err);
     return NextResponse.json(

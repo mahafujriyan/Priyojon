@@ -11,20 +11,10 @@ import { AccessCodeNotSet } from "@/components/AccessCodeNotSet";
 
 type PageProps = { params: Promise<{ accessPath: string }> };
 
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
-  const { accessPath } = await params;
-  const parsed = parseAccessPath(accessPath);
-  if (!parsed) return { title: "প্রিয়জন কাউন্টডাউন" };
-
-  const person = await findPersonByAccess(parsed.slug, parsed.token);
-
-  return {
-    title: person ? `${person.name} — কাউন্টডাউন` : "প্রিয়জন কাউন্টডাউন",
-    robots: { index: false, follow: false },
-  };
-}
+export const metadata: Metadata = {
+  title: "গোপন প্রবেশ — প্রিয়জন",
+  robots: { index: false, follow: false },
+};
 
 export default async function CountdownPage({ params }: PageProps) {
   const { accessPath } = await params;
@@ -51,8 +41,6 @@ export default async function CountdownPage({ params }: PageProps) {
   return (
     <CountdownPortal
       accessPath={accessPath}
-      personName={person.name}
-      eventType={person.eventType}
       unlocked={unlocked}
       data={data}
     />

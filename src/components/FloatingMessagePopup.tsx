@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { WelcomeSparkles } from "@/components/WelcomeSparkles";
 
 type Props = {
   personName: string;
@@ -45,6 +46,10 @@ export function FloatingMessagePopup({
     <AnimatePresence>
       {visible && (
         <>
+          <WelcomeSparkles
+            emojis={isCelebration ? ["🎂", "🎉", "🎈", "🎁", "🥳", "💖"] : ["💌", "✨", "💖", "🌸", "💕", "⭐"]}
+            fullScreen
+          />
           <motion.div
             className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
             initial={{ opacity: 0 }}
@@ -62,14 +67,19 @@ export function FloatingMessagePopup({
             <motion.div
               animate={{ y: [0, -6, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              className="rounded-3xl overflow-hidden shadow-2xl ring-2 ring-white/30"
+              className="relative rounded-3xl overflow-hidden shadow-2xl ring-2 ring-white/30"
             >
-              <div className="bg-gradient-to-br from-rose-500/95 via-pink-600/95 to-purple-700/95 backdrop-blur-xl px-6 py-7 sm:px-8 sm:py-9 text-center text-white">
+              <motion.div
+                className="absolute -inset-0.5 bg-gradient-to-r from-rose-400 via-pink-400 to-purple-400 opacity-50 blur-md"
+                animate={{ opacity: [0.35, 0.65, 0.35] }}
+                transition={{ duration: 2.5, repeat: Infinity }}
+              />
+              <div className="relative bg-gradient-to-br from-rose-500/95 via-pink-600/95 to-purple-700/95 backdrop-blur-xl px-6 py-7 sm:px-8 sm:py-9 text-center text-white">
                 <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
+                  initial={{ scale: 0, rotate: -20 }}
+                  animate={{ scale: 1, rotate: 0 }}
                   transition={{ delay: 0.2, type: "spring" }}
-                  className="text-4xl mb-3"
+                  className="text-4xl sm:text-5xl mb-3"
                 >
                   {isCelebration ? "🎂🎉" : "💌"}
                 </motion.div>
