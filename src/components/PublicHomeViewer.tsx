@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { CountdownDisplay, type CountdownPageData } from "./CountdownDisplay";
 import { QuoteDock } from "./QuoteDock";
-import Link from "next/link";
+import { SiteLogo } from "./SiteLogo";
 
 type PersonItem = {
   id: string;
@@ -43,6 +44,9 @@ export function PublicHomeViewer({ persons, initialPreview }: Props) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-20 bg-gradient-to-br from-rose-50 via-white to-violet-50">
         <main className="max-w-md text-center space-y-4">
+          <div className="flex justify-center">
+            <SiteLogo href={null} size={80} showName={false} />
+          </div>
           <h1 className="text-3xl font-bold text-zinc-900">প্রিয়জন কাউন্টডাউন</h1>
           <p className="text-zinc-500">
             এখনো কাউন্টডাউন সেট করা হয়নি। অ্যাডমিন প্যানেল থেকে প্রিয়জন যোগ করুন।

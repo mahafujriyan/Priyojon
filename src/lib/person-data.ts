@@ -1,8 +1,22 @@
 import { prisma } from "./prisma";
 import { getCountdownParts } from "./countdown";
-import { selectTheme } from "./theme";
+import { parseThemeColors, selectTheme } from "./theme";
 import { selectQuote, resolveQuoteText } from "./quotes";
 import type { CountdownPageData } from "@/components/CountdownDisplay";
+import type { ThemeSet } from "@/generated/prisma/client";
+
+function serializeTheme(theme: ThemeSet) {
+  const colors = parseThemeColors(theme.colors);
+  return {
+    id: theme.id,
+    colors: theme.colors,
+    bgImageUrl: theme.bgImageUrl,
+    animationType: theme.animationType,
+    kind: theme.kind,
+    milestoneDays: theme.milestoneDays,
+    gradient: colors.gradient,
+  };
+}
 
 export async function buildCountdownPageData(
   personId: string,
@@ -22,13 +36,27 @@ export async function buildCountdownPageData(
     prisma.quote.findMany(),
   ]);
 
-  const theme = selectTheme(
+  let theme = selectTheme(
     themes,
     person.relationType,
     parts.daysRemaining,
     parts.isCelebration,
     now,
   );
+
+  if (
+    theme?.kind === "DAILY" &&
+    !parts.isCelebration &&
+    person.preferredThemeId
+  ) {
+    const preferred = themes.find(
+      (t) =>
+        t.id === person.preferredThemeId &&
+        t.relationType === person.relationType &&
+        t.kind === "DAILY",
+    );
+    if (preferred) theme = preferred;
+  }
 
   const quote = selectQuote(
     quotes,
@@ -65,13 +93,7 @@ export async function buildCountdownPageData(
       isRecurringYearly: person.isRecurringYearly,
       coverImageUrl: person.coverImageUrl,
     },
-    theme: {
-      colors: theme.colors,
-      bgImageUrl: theme.bgImageUrl,
-      animationType: theme.animationType,
-      kind: theme.kind,
-      milestoneDays: theme.milestoneDays,
-    },
+    theme: serializeTheme(theme),
     quote: quoteText ? { text: quoteText } : null,
     popupMessage,
     showPopup: Boolean(popupMessage),

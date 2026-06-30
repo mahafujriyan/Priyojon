@@ -18,6 +18,7 @@ export type PersonInput = {
   coverImageUrl: string | null;
   customQuote: string | null;
   celebrationPopupMessage: string | null;
+  preferredThemeId: string | null;
   slug: string;
 };
 
@@ -79,6 +80,7 @@ export function parsePersonBody(body: unknown): PersonInput {
     coverImageUrl: optText(data.coverImageUrl),
     customQuote: optText(data.customQuote),
     celebrationPopupMessage: optText(data.celebrationPopupMessage),
+    preferredThemeId: optText(data.preferredThemeId),
     slug: slugifyName(name),
   };
 }

@@ -39,6 +39,7 @@ model Person {
   coverImageUrl          String?
   customQuote            String?
   celebrationPopupMessage String?
+  preferredThemeId       String?
   createdAt              DateTime     @default(now())
   updatedAt              DateTime     @updatedAt
   accessLogs             AccessLog[]

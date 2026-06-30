@@ -6,6 +6,7 @@ import { buildAccessPath } from "@/lib/slug";
 import { buildCountdownPageData } from "@/lib/person-data";
 import { DashboardClient } from "@/components/DashboardClient";
 import { LogoutButton } from "@/components/LogoutButton";
+import { SiteLogo } from "@/components/SiteLogo";
 
 type PageProps = {
   searchParams: Promise<{ missing?: string }>;
@@ -40,11 +41,14 @@ export default async function AdminDashboardPage({ searchParams }: PageProps) {
     <div className="min-h-screen bg-zinc-50">
       <header className="bg-white border-b border-zinc-200">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <p className="text-xs text-zinc-400 uppercase tracking-wider">
-              অ্যাডমিন প্যানেল
-            </p>
-            <h1 className="text-xl font-bold text-zinc-900">ড্যাশবোর্ড</h1>
+          <div className="flex items-center gap-4">
+            <SiteLogo href="/" size={40} />
+            <div>
+              <p className="text-xs text-zinc-400 uppercase tracking-wider">
+                অ্যাডমিন প্যানেল
+              </p>
+              <h1 className="text-xl font-bold text-zinc-900">ড্যাশবোর্ড</h1>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <Link

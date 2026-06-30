@@ -7,8 +7,8 @@ import { CelebrationEffect } from "./CelebrationEffect";
 import { ThemeParticles } from "./ThemeParticles";
 import { AnimatedHeroName } from "./AnimatedHeroName";
 import { FloatingMessagePopup } from "./FloatingMessagePopup";
-import { parseThemeColors } from "@/lib/theme";
-import { RELATION_LABELS } from "@/lib/theme";
+import { parseThemeColors, RELATION_LABELS } from "@/lib/theme";
+import { resolveParticleVariant } from "@/lib/theme-effects";
 import type { RelationType } from "@/generated/prisma/client";
 
 export type CountdownPageData = {
@@ -20,11 +20,13 @@ export type CountdownPageData = {
     coverImageUrl: string | null;
   };
   theme: {
+    id: string;
     colors: unknown;
     bgImageUrl: string | null;
     animationType: string;
     kind: string;
     milestoneDays: number | null;
+    gradient: string;
   };
   quote: { text: string } | null;
   popupMessage: string | null;
@@ -43,19 +45,6 @@ export type CountdownPageData = {
   };
 };
 
-function particleVariant(
-  relationType: RelationType,
-  animationType: string,
-): "hearts" | "sparkle" | "petals" | null {
-  if (animationType === "confetti") return null;
-  if (relationType === "GIRLFRIEND_BOYFRIEND" || relationType === "CRUSH") {
-    return animationType === "float" ? "petals" : "hearts";
-  }
-  if (relationType === "BEST_FRIEND") return "sparkle";
-  if (animationType === "float" || animationType === "pulse") return "sparkle";
-  return null;
-}
-
 export function CountdownDisplay({
   data,
   showRelationLabel = true,
@@ -69,7 +58,7 @@ export function CountdownDisplay({
   const isMilestone = data.theme.kind === "MILESTONE";
   const isCelebration = data.isCelebration;
   const bgImage = data.theme.bgImageUrl;
-  const particles = particleVariant(
+  const particles = resolveParticleVariant(
     data.person.relationType,
     data.theme.animationType,
   );
@@ -79,7 +68,6 @@ export function CountdownDisplay({
       className="relative min-h-[100dvh] flex flex-col items-center justify-center overflow-hidden px-3 sm:px-6 py-8 sm:py-12 pb-44 sm:pb-48"
       style={{ color: colors.text }}
     >
-      {/* Theme background image */}
       <AnimatePresence mode="wait">
         {bgImage && (
           <motion.div
@@ -102,17 +90,23 @@ export function CountdownDisplay({
         )}
       </AnimatePresence>
 
-      {/* Gradient fallback when no image */}
       {!bgImage && (
-        <div
+        <motion.div
+          key={data.theme.id}
           className="absolute inset-0"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
           style={{ background: colors.gradient }}
         />
       )}
 
-      {/* Color overlay for readability */}
-      <div
+      <motion.div
+        key={`overlay-${data.theme.id}`}
         className="absolute inset-0"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
         style={{
           background: `linear-gradient(
             165deg,
@@ -123,7 +117,6 @@ export function CountdownDisplay({
         }}
       />
 
-      {/* Person cover (optional layer) */}
       {data.person.coverImageUrl && (
         <div className="absolute inset-0 mix-blend-soft-light opacity-40">
           <Image
@@ -136,7 +129,6 @@ export function CountdownDisplay({
         </div>
       )}
 
-      {/* Vignette */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.35)_100%)]" />
 
       {particles && <ThemeParticles variant={particles} />}

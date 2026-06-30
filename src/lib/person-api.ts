@@ -15,6 +15,7 @@ export function serializePerson(person: Person) {
     coverImageUrl: person.coverImageUrl ?? "",
     customQuote: person.customQuote ?? "",
     celebrationPopupMessage: person.celebrationPopupMessage ?? "",
+    preferredThemeId: person.preferredThemeId ?? "",
     createdAt: person.createdAt.toISOString(),
     updatedAt: person.updatedAt.toISOString(),
     accessPath: buildAccessPath(person.slug, person.accessToken),
@@ -59,6 +60,7 @@ export function getApiErrorResponse(err: unknown): {
       "জন্মতারিখ",
       "সম্পর্কের ধরন",
       "অবৈধ ডেটা",
+      "থিম",
     ];
     if (validationHints.some((hint) => msg.includes(hint))) {
       return { status: 400, message: msg };

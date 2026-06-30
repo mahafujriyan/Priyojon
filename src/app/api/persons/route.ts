@@ -8,6 +8,7 @@ import {
   readJsonBody,
   serializePerson,
 } from "@/lib/person-api";
+import { resolvePreferredThemeId } from "@/lib/theme-selection";
 
 export async function GET() {
   const session = await getSession();
@@ -32,6 +33,10 @@ export async function POST(request: Request) {
     const body = await readJsonBody(request);
     const input = parsePersonBody(body);
     const accessToken = generateAccessToken();
+    const preferredThemeId = await resolvePreferredThemeId(
+      input.preferredThemeId,
+      input.relationType,
+    );
 
     const person = await prisma.person.create({
       data: {
@@ -44,6 +49,7 @@ export async function POST(request: Request) {
         coverImageUrl: input.coverImageUrl,
         customQuote: input.customQuote,
         celebrationPopupMessage: input.celebrationPopupMessage,
+        preferredThemeId,
       },
     });
 

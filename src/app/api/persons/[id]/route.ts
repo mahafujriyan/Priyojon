@@ -7,6 +7,7 @@ import {
   readJsonBody,
   serializePerson,
 } from "@/lib/person-api";
+import { resolvePreferredThemeId } from "@/lib/theme-selection";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -46,6 +47,10 @@ export async function PUT(request: Request, context: RouteContext) {
       input.name.trim() === existing.name.trim()
         ? existing.slug
         : input.slug;
+    const preferredThemeId = await resolvePreferredThemeId(
+      input.preferredThemeId,
+      input.relationType,
+    );
 
     const person = await prisma.person.update({
       where: { id },
@@ -58,6 +63,7 @@ export async function PUT(request: Request, context: RouteContext) {
         coverImageUrl: input.coverImageUrl,
         customQuote: input.customQuote,
         celebrationPopupMessage: input.celebrationPopupMessage,
+        preferredThemeId,
       },
     });
 

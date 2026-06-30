@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { RelationType } from "@/generated/prisma/client";
 import { RELATION_LABELS } from "@/lib/theme";
+import {
+  AdminThemeSelect,
+  type AdminThemeOption,
+} from "@/components/AdminThemeSelect";
 
 type PersonFormData = {
   name: string;
@@ -13,6 +17,7 @@ type PersonFormData = {
   coverImageUrl: string;
   customQuote: string;
   celebrationPopupMessage: string;
+  preferredThemeId: string;
 };
 
 type Props = {
@@ -27,6 +32,8 @@ export function PersonForm({ initial, mode }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [themeOptions, setThemeOptions] = useState<AdminThemeOption[]>([]);
+  const [themesLoading, setThemesLoading] = useState(false);
 
   const [form, setForm] = useState<PersonFormData>({
     name: initial?.name ?? "",
@@ -36,7 +43,42 @@ export function PersonForm({ initial, mode }: Props) {
     coverImageUrl: initial?.coverImageUrl ?? "",
     customQuote: initial?.customQuote ?? "",
     celebrationPopupMessage: initial?.celebrationPopupMessage ?? "",
+    preferredThemeId: initial?.preferredThemeId ?? "",
   });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadThemes() {
+      setThemesLoading(true);
+      try {
+        const res = await fetch(
+          `/api/themes?relationType=${form.relationType}`,
+        );
+        if (!res.ok) return;
+        const data = (await res.json()) as AdminThemeOption[];
+        if (!cancelled) {
+          setThemeOptions(data);
+          setForm((f) => {
+            if (
+              f.preferredThemeId &&
+              !data.some((t) => t.id === f.preferredThemeId)
+            ) {
+              return { ...f, preferredThemeId: "" };
+            }
+            return f;
+          });
+        }
+      } finally {
+        if (!cancelled) setThemesLoading(false);
+      }
+    }
+
+    loadThemes();
+    return () => {
+      cancelled = true;
+    };
+  }, [form.relationType]);
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -146,6 +188,7 @@ export function PersonForm({ initial, mode }: Props) {
             setForm({
               ...form,
               relationType: e.target.value as RelationType,
+              preferredThemeId: "",
             })
           }
           className="w-full rounded-lg border border-zinc-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-400"
@@ -184,6 +227,23 @@ export function PersonForm({ initial, mode }: Props) {
           প্রতিবছর পুনরাবৃত্তি (Recurring Yearly)
         </span>
       </label>
+
+      <div>
+        <label className="block text-sm font-medium text-zinc-700 mb-2">
+          থিম (অ্যাডমিন)
+        </label>
+        <AdminThemeSelect
+          themes={themeOptions}
+          value={form.preferredThemeId}
+          loading={themesLoading}
+          onChange={(preferredThemeId) =>
+            setForm({ ...form, preferredThemeId })
+          }
+        />
+        <p className="text-xs text-zinc-400 mt-1">
+          ডিফল্ট রাখলে প্রতিদিন অটো থিম বদলাবে
+        </p>
+      </div>
 
       <div>
         <label className="block text-sm font-medium text-zinc-700 mb-1">

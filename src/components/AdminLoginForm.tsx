@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { SiteLogo } from "@/components/SiteLogo";
 
 type Props = {
   defaultUsername: string;
@@ -47,6 +48,9 @@ export function AdminLoginForm({ defaultUsername, devHint }: Props) {
     <div className="flex flex-1 items-center justify-center px-4 py-12 bg-gradient-to-b from-rose-50 to-zinc-50">
       <div className="w-full max-w-sm">
         <div className="text-center mb-6">
+          <div className="flex justify-center mb-4">
+            <SiteLogo href="/" size={72} />
+          </div>
           <Link
             href="/"
             className="text-sm text-zinc-500 hover:text-rose-500 transition-colors"

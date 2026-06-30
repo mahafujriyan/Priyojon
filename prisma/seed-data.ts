@@ -261,7 +261,7 @@ export function buildThemeSeeds() {
         bgImageUrl: resolveThemeBgUrl(relationType, "DAILY", i),
         kind: "DAILY",
         sortOrder: i,
-        animationType: i % 2 === 0 ? "fade" : "float",
+        animationType: ["fade", "float", "pulse"][i % 3],
       });
     });
 
