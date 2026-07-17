@@ -20,20 +20,48 @@ function loadEnvFile() {
   }
 }
 
+/** Prisma MongoDB requires a database name in the path: /dbname */
+function normalizeMongoUrl(url: string): string {
+  const parsed = new URL(url);
+  const dbName = parsed.pathname.replace(/^\//, "").trim();
+
+  if (!dbName) {
+    parsed.pathname = "/priyojon";
+  }
+
+  if (!parsed.searchParams.has("retryWrites")) {
+    parsed.searchParams.set("retryWrites", "true");
+  }
+  if (!parsed.searchParams.has("w")) {
+    parsed.searchParams.set("w", "majority");
+  }
+
+  return parsed.toString();
+}
+
 loadEnvFile();
 
-const url = process.env.DATABASE_URL;
-if (!url) {
+const rawUrl = process.env.DATABASE_URL;
+if (!rawUrl) {
   throw new Error("DATABASE_URL is missing from .env");
 }
 
-const parsed = new URL(url);
-console.log(
-  `Database: ${parsed.hostname}:${parsed.port || "5432"}${parsed.pathname}`,
-);
+if (!rawUrl.startsWith("mongodb://") && !rawUrl.startsWith("mongodb+srv://")) {
+  throw new Error(
+    "DATABASE_URL must be a MongoDB URL (mongodb:// or mongodb+srv://)",
+  );
+}
+
+const url = normalizeMongoUrl(rawUrl);
+process.env.DATABASE_URL = url;
+
+const host = new URL(url).hostname;
+const dbName = new URL(url).pathname.replace(/^\//, "") || "priyojon";
+
+console.log(`Database: MongoDB → ${host}/${dbName}`);
 console.log("Pushing schema...");
 
-execSync("npx prisma db push --accept-data-loss", {
+execSync("npx prisma db push", {
   stdio: "inherit",
   env: process.env,
 });
@@ -44,4 +72,4 @@ execSync("npx prisma db seed", {
   env: process.env,
 });
 
-console.log("Done! Tables ready.");
+console.log("Done! MongoDB collections ready.");

@@ -1,4 +1,4 @@
-import type { EventType, RelationType } from "@/generated/prisma/client";
+import type { EventType, RelationType } from "@/generated/prisma";
 import { prisma } from "./prisma";
 
 export async function resolvePreferredThemeId(

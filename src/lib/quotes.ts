@@ -1,4 +1,4 @@
-import type { Quote, RelationType } from "@/generated/prisma/client";
+import type { Quote, RelationType } from "@/generated/prisma";
 import { getMilestoneThreshold } from "./countdown";
 
 type PersonQuotes = {

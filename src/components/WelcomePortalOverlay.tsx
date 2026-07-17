@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { EventType } from "@/generated/prisma/client";
+import type { EventType } from "@/generated/prisma";
 import { EVENT_OVERLAY_EMOJIS } from "@/lib/events";
 import { WelcomeSparkles } from "@/components/WelcomeSparkles";
 

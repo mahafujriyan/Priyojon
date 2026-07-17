@@ -1,16 +1,12 @@
 import "dotenv/config";
-import { PrismaClient } from "../src/generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "../src/generated/prisma";
 import bcrypt from "bcryptjs";
 import { QUOTE_SEEDS, buildThemeSeeds } from "./seed-data";
 
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL!,
-});
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 
 async function main() {
-  console.log("Seeding database...");
+  console.log("Seeding MongoDB...");
 
   await prisma.accessLog.deleteMany();
   // Keep existing persons — re-seed should not wipe user data

@@ -13,7 +13,7 @@ import { CelebrationReveal } from "./CelebrationReveal";
 import { WelcomePortalOverlay } from "./WelcomePortalOverlay";
 import { parseThemeColors } from "@/lib/theme";
 import { resolveParticleVariant } from "@/lib/theme-effects";
-import type { EventType, RelationType } from "@/generated/prisma/client";
+import type { EventType, RelationType } from "@/generated/prisma";
 
 export type CountdownPageData = {
   person: {

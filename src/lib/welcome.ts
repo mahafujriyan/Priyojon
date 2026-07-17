@@ -1,4 +1,4 @@
-import type { EventType } from "@/generated/prisma/client";
+import type { EventType } from "@/generated/prisma";
 
 const WELCOME_BY_EVENT: Record<EventType, (name: string) => string> = {
   BIRTHDAY: (name) =>

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { CountdownDisplay, type CountdownPageData } from "./CountdownDisplay";
 import { RELATION_LABELS } from "@/lib/theme";
 import { EVENT_LABELS } from "@/lib/events";
-import type { EventType, RelationType } from "@/generated/prisma/client";
+import type { EventType, RelationType } from "@/generated/prisma";
 
 type PersonItem = {
   id: string;

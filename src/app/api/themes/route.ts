@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { parseThemeColors } from "@/lib/theme";
-import type { EventType, RelationType } from "@/generated/prisma/client";
+import type { EventType, RelationType } from "@/generated/prisma";
 
 const RELATION_TYPES = new Set<string>([
   "GIRLFRIEND_BOYFRIEND",

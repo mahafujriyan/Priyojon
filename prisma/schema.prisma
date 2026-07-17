@@ -1,10 +1,11 @@
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
 }
 
 enum EventType {
@@ -37,15 +38,15 @@ enum QuoteKind {
 }
 
 model Person {
-  id                      String       @id @default(cuid())
+  id                      String     @id @default(auto()) @map("_id") @db.ObjectId
   name                    String
   slug                    String
   relationType            RelationType
-  eventType               EventType    @default(BIRTHDAY)
+  eventType               EventType  @default(BIRTHDAY)
   targetDate              DateTime
-  useExactTime            Boolean      @default(false)
-  isRecurringYearly       Boolean      @default(true)
-  accessToken             String       @unique
+  useExactTime            Boolean    @default(false)
+  isRecurringYearly       Boolean    @default(true)
+  accessToken             String     @unique
   coverImageUrl           String?
   customBgImageUrl        String?
   customQuote             String?
@@ -53,8 +54,8 @@ model Person {
   celebrationPopupMessage String?
   preferredThemeId        String?
   accessCodeHash          String?
-  createdAt               DateTime     @default(now())
-  updatedAt               DateTime     @updatedAt
+  createdAt               DateTime   @default(now())
+  updatedAt               DateTime   @updatedAt
   accessLogs              AccessLog[]
 
   @@unique([slug, accessToken])
@@ -62,21 +63,21 @@ model Person {
 }
 
 model ThemeSet {
-  id             String       @id @default(cuid())
-  relationType   RelationType
-  eventType      EventType    @default(BIRTHDAY)
-  name           String
-  colors         Json
-  bgImageUrl     String?
-  overlayEmoji   String?
-  animationType  String       @default("fade")
-  kind           ThemeKind    @default(DAILY)
-  milestoneDays  Int?
-  sortOrder      Int          @default(0)
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  relationType  RelationType
+  eventType     EventType    @default(BIRTHDAY)
+  name          String
+  colors        Json
+  bgImageUrl    String?
+  overlayEmoji  String?
+  animationType String       @default("fade")
+  kind          ThemeKind    @default(DAILY)
+  milestoneDays Int?
+  sortOrder     Int          @default(0)
 }
 
 model Quote {
-  id            String       @id @default(cuid())
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
   relationType  RelationType
   text          String
   kind          QuoteKind    @default(DAILY)
@@ -85,14 +86,14 @@ model Quote {
 }
 
 model AdminUser {
-  id           String @id @default(cuid())
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
   email        String @unique
   passwordHash String
 }
 
 model AccessLog {
-  id         String   @id @default(cuid())
-  personId   String
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  personId   String   @db.ObjectId
   person     Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
   visitorKey String?
   viewedAt   DateTime @default(now())

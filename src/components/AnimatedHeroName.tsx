@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { RelationType } from "@/generated/prisma/client";
+import type { RelationType } from "@/generated/prisma";
 
 type Props = {
   name: string;

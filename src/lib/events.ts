@@ -1,4 +1,4 @@
-import type { EventType } from "@/generated/prisma/client";
+import type { EventType } from "@/generated/prisma";
 
 export const EVENT_LABELS: Record<EventType, string> = {
   BIRTHDAY: "জন্মদিন",

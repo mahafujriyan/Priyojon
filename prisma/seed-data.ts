@@ -1,4 +1,4 @@
-import type { EventType, RelationType } from "../src/generated/prisma/client";
+import type { EventType, RelationType } from "../src/generated/prisma";
 import { resolveThemeBgUrl } from "../src/lib/theme-images";
 import { EVENT_OVERLAY_EMOJIS } from "../src/lib/events";
 

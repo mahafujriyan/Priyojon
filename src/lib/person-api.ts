@@ -1,7 +1,7 @@
-import { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma";
 import { buildAccessPath, buildPrivatePortalPath } from "./slug";
 import { formatDateForInput, formatDateTimeForInput } from "./date";
-import type { Person } from "@/generated/prisma/client";
+import type { Person } from "@/generated/prisma";
 
 export function serializePerson(
   person: Person,

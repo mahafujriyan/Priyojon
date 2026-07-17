@@ -1,4 +1,4 @@
-import type { EventType, RelationType } from "@/generated/prisma/client";
+import type { EventType, RelationType } from "@/generated/prisma";
 import { slugifyName } from "./slug";
 import {
   defaultExactTimeForEvent,

@@ -1,7 +1,7 @@
 import { mkdir, writeFile, copyFile, access } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
 import { THEME_IMAGE_SOURCES } from "../src/lib/theme-images";
-import type { RelationType } from "../src/generated/prisma/client";
+import type { RelationType } from "../src/generated/prisma";
 
 const FOLDERS: Record<RelationType, string> = {
   GIRLFRIEND_BOYFRIEND: "girlfriend-boyfriend",

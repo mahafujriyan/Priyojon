@@ -1,4 +1,4 @@
-import type { RelationType } from "@/generated/prisma/client";
+import type { RelationType } from "@/generated/prisma";
 
 export type ThemeImageKind = "DAILY" | "MILESTONE" | "CELEBRATION";
 

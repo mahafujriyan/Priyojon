@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { PrismaClient } from "../src/generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "../src/generated/prisma";
 import { parsePersonBody } from "../src/lib/person-input";
 
 function loadEnvFile() {
@@ -20,9 +19,13 @@ function loadEnvFile() {
 
 loadEnvFile();
 
-const id = process.argv[2] ?? "cmr14ernt000080kqszzb8ymx";
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
-const prisma = new PrismaClient({ adapter });
+const id = process.argv[2];
+if (!id) {
+  console.error("Usage: tsx scripts/test-person-update.ts <personId>");
+  process.exit(1);
+}
+
+const prisma = new PrismaClient();
 
 async function main() {
   const person = await prisma.person.findUnique({ where: { id } });

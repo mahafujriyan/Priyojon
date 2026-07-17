@@ -4,7 +4,7 @@ import { getCountdownParts } from "./countdown";
 import { parseThemeColors, selectTheme } from "./theme";
 import { selectQuote, resolveQuoteText } from "./quotes";
 import type { CountdownPageData } from "@/components/CountdownDisplay";
-import type { EventType, ThemeSet } from "@/generated/prisma/client";
+import type { EventType, ThemeSet } from "@/generated/prisma";
 import { EVENT_OVERLAY_EMOJIS } from "./events";
 import { resolveWelcomeMessage } from "./welcome";
 
@@ -106,7 +106,7 @@ export async function buildCountdownPageData(
     await prisma.accessLog.create({
       data: {
         personId: person.id,
-        visitorKey: options.visitorKey ?? null,
+        visitorKey: options.visitorKey  ?? null,
       },
     });
   }

@@ -1,4 +1,4 @@
-import type { EventType, RelationType, ThemeSet } from "@/generated/prisma/client";
+import type { EventType, RelationType, ThemeSet } from "@/generated/prisma";
 import { getMilestoneThreshold } from "./countdown";
 
 export type ThemeColors = {

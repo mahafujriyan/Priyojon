@@ -8,7 +8,7 @@ import {
   type CountdownParts,
 } from "@/lib/countdown";
 import { EVENT_CELEBRATION } from "@/lib/events";
-import type { EventType } from "@/generated/prisma/client";
+import type { EventType } from "@/generated/prisma";
 
 type InitialCountdown = {
   days: number;
