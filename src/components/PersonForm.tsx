@@ -457,7 +457,9 @@ export function PersonForm({ initial, mode }: Props) {
           <p className="text-sm text-zinc-500 mt-1">আপলোড হচ্ছে...</p>
         )}
         {form.coverImageUrl && (
-          <p className="text-sm text-green-600 mt-1">ছবি আপলোড হয়েছে ✓</p>
+          <p className="text-sm text-green-600 mt-1">
+            ImgBB-তে আপলোড হয়েছে — সেভ করলে ডাটাবেসে থাকবে ✓
+          </p>
         )}
       </div>
 
@@ -545,7 +547,9 @@ export function PersonForm({ initial, mode }: Props) {
         )}
         {form.celebrationPopupImageUrl && (
           <div className="mt-2 space-y-2">
-            <p className="text-sm text-green-600">পপআপ ছবি আপলোড হয়েছে ✓</p>
+            <p className="text-sm text-green-600">
+              ImgBB-তে আপলোড হয়েছে — সেভ করলে ডাটাবেসে থাকবে ✓
+            </p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={form.celebrationPopupImageUrl}
