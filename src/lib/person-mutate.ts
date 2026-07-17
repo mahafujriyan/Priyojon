@@ -35,5 +35,6 @@ export function personDataFromInput(input: PersonInput) {
     customQuote: input.customQuote,
     welcomeMessage: input.welcomeMessage,
     celebrationPopupMessage: input.celebrationPopupMessage,
+    celebrationPopupImageUrl: input.celebrationPopupImageUrl,
   };
 }

@@ -50,9 +50,10 @@ model Person {
   coverImageUrl           String?
   customBgImageUrl        String?
   customQuote             String?
-  welcomeMessage          String?
-  celebrationPopupMessage String?
-  preferredThemeId        String?
+  welcomeMessage            String?
+  celebrationPopupMessage   String?
+  celebrationPopupImageUrl  String?
+  preferredThemeId          String?
   accessCodeHash          String?
   createdAt               DateTime   @default(now())
   updatedAt               DateTime   @updatedAt

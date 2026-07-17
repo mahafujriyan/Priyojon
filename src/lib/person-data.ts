@@ -98,6 +98,12 @@ export async function buildCountdownPageData(
       null
     : null;
 
+  const popupImageUrl = parts.isCelebration
+    ? person.celebrationPopupImageUrl?.trim() ||
+      person.coverImageUrl?.trim() ||
+      null
+    : null;
+
   const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
   if (!theme) return null;
@@ -106,7 +112,7 @@ export async function buildCountdownPageData(
     await prisma.accessLog.create({
       data: {
         personId: person.id,
-        visitorKey: options.visitorKey  ?? null,
+        visitorKey: options.visitorKey ?? null,
       },
     });
   }
@@ -128,7 +134,8 @@ export async function buildCountdownPageData(
     quote: quoteText ? { text: quoteText } : null,
     welcomeMessage,
     popupMessage,
-    showPopup: Boolean(popupMessage),
+    popupImageUrl,
+    showPopup: Boolean(popupMessage || popupImageUrl),
     dateKey,
     serverTimeIso: now.toISOString(),
     isCelebration: parts.isCelebration,

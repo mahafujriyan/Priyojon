@@ -28,6 +28,7 @@ type PersonFormData = {
   customQuote: string;
   welcomeMessage: string;
   celebrationPopupMessage: string;
+  celebrationPopupImageUrl: string;
   preferredThemeId: string;
   accessCode: string;
 };
@@ -49,6 +50,7 @@ export function PersonForm({ initial, mode }: Props) {
   const [error, setError] = useState("");
   const [savedPortalPath, setSavedPortalPath] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadingPopup, setUploadingPopup] = useState(false);
   const [themeOptions, setThemeOptions] = useState<AdminThemeOption[]>([]);
   const [themesLoading, setThemesLoading] = useState(false);
   const [publicImages, setPublicImages] = useState<string[]>([]);
@@ -66,6 +68,7 @@ export function PersonForm({ initial, mode }: Props) {
     customQuote: initial?.customQuote ?? "",
     welcomeMessage: initial?.welcomeMessage ?? "",
     celebrationPopupMessage: initial?.celebrationPopupMessage ?? "",
+    celebrationPopupImageUrl: initial?.celebrationPopupImageUrl ?? "",
     preferredThemeId: initial?.preferredThemeId ?? "",
     accessCode: "",
   });
@@ -120,6 +123,18 @@ export function PersonForm({ initial, mode }: Props) {
     };
   }, [form.relationType, form.eventType]);
 
+  async function uploadImage(
+    file: File,
+    field: "coverImageUrl" | "celebrationPopupImageUrl",
+  ) {
+    const body = new FormData();
+    body.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? "Upload failed");
+    setForm((f) => ({ ...f, [field]: data.url as string }));
+  }
+
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -128,19 +143,29 @@ export function PersonForm({ initial, mode }: Props) {
     setError("");
 
     try {
-      const body = new FormData();
-      body.append("file", file);
-
-      const res = await fetch("/api/upload", { method: "POST", body });
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error ?? "Upload failed");
-
-      setForm((f) => ({ ...f, coverImageUrl: data.url }));
+      await uploadImage(file, "coverImageUrl");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setUploading(false);
+    }
+  }
+
+  async function handlePopupImageUpload(
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingPopup(true);
+    setError("");
+
+    try {
+      await uploadImage(file, "celebrationPopupImageUrl");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploadingPopup(false);
     }
   }
 
@@ -447,7 +472,7 @@ export function PersonForm({ initial, mode }: Props) {
             <strong>নিজের বাণি</strong> — পেজে প্রতিদিন নিচে দেখায়
           </li>
           <li>
-            <strong>বিশেষ দিন পপআপ</strong> — টার্গেট তারিখে (জন্মদিন ইত্যাদি)
+            <strong>বিশেষ দিন পপআপ</strong> — টার্গেট তারিখে ছবি + মেসেজ সহ
             ফোনে উড়ে আসে
           </li>
         </ul>
@@ -501,8 +526,45 @@ export function PersonForm({ initial, mode }: Props) {
           placeholder="জন্মদিনে ফোনে উড়ে আসা স্পেশাল মেসেজ..."
           className="w-full rounded-lg border border-zinc-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none"
         />
-        <p className="text-xs text-zinc-400 mt-1">
+        <p className="text-xs text-zinc-400 mt-1 mb-3">
           টার্গেট ডেটে সুন্দর অ্যানিমেশনসহ পপআপ হবে
+        </p>
+
+        <label className="block text-sm font-medium text-zinc-700 mb-1">
+          বিশেষ দিনের পপআপ ছবি (ঐচ্ছিক)
+        </label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handlePopupImageUpload}
+          disabled={uploadingPopup}
+          className="w-full text-sm text-zinc-600"
+        />
+        {uploadingPopup && (
+          <p className="text-sm text-zinc-500 mt-1">ছবি আপলোড হচ্ছে...</p>
+        )}
+        {form.celebrationPopupImageUrl && (
+          <div className="mt-2 space-y-2">
+            <p className="text-sm text-green-600">পপআপ ছবি আপলোড হয়েছে ✓</p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={form.celebrationPopupImageUrl}
+              alt="Popup preview"
+              className="h-28 w-full max-w-xs object-cover rounded-xl border border-zinc-200"
+            />
+            <button
+              type="button"
+              onClick={() =>
+                setForm({ ...form, celebrationPopupImageUrl: "" })
+              }
+              className="text-xs text-red-500 hover:underline"
+            >
+              ছবি সরান
+            </button>
+          </div>
+        )}
+        <p className="text-xs text-zinc-400 mt-1">
+          খালি রাখলে কভার ছবি থাকলে সেটা পপআপে দেখাবে
         </p>
       </div>
 

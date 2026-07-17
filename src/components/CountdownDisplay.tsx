@@ -38,6 +38,7 @@ export type CountdownPageData = {
   quote: { text: string } | null;
   welcomeMessage: string;
   popupMessage: string | null;
+  popupImageUrl: string | null;
   showPopup: boolean;
   personId: string;
   dateKey: string;
@@ -142,10 +143,11 @@ export function CountdownDisplay({
         eventType={data.person.eventType}
       />
 
-      {data.showPopup && data.popupMessage && (
+      {data.showPopup && (data.popupMessage || data.popupImageUrl) && (
         <FloatingMessagePopup
           personName={data.person.name}
           message={data.popupMessage}
+          imageUrl={data.popupImageUrl}
           isCelebration={isCelebration}
           personId={data.personId}
           dateKey={data.dateKey}

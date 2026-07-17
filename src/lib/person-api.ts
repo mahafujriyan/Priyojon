@@ -25,6 +25,7 @@ export function serializePerson(
     customQuote: person.customQuote ?? "",
     welcomeMessage: person.welcomeMessage ?? "",
     celebrationPopupMessage: person.celebrationPopupMessage ?? "",
+    celebrationPopupImageUrl: person.celebrationPopupImageUrl ?? "",
     preferredThemeId: person.preferredThemeId ?? "",
     hasAccessCode: Boolean(person.accessCodeHash),
     accessPath,
